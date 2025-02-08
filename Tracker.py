@@ -20,9 +20,51 @@ class SimpleApp:
         self.text.config(state=tk.DISABLED)
 
         self.buttons = []  # Store buttons separately
-        self.spawn_button()  # Start spawning buttons
+        self.first_click = False  # Flag to track if the first button has been clicked
+
+        # Spawn the first button
+        self.spawn_first_button()
+
+    def spawn_first_button(self):
+        """Spawn the first X button on the screen."""
+        padding = 50
+        screenWidth = self.app.winfo_width()
+        screenHeight = self.app.winfo_height()
+
+        # Initial spawn location for the first button
+        newX = random.uniform(padding / screenWidth, 1 - padding / screenWidth)
+        newY = random.uniform(padding / screenHeight, 1 - padding / screenHeight)
+
+        # Create a new button instance
+        firstButton = CTkButton(
+            master=self.app, text="❌", text_color="white",
+            width=120, height=120,
+            fg_color="#1A1A1A", hover_color="#373662",
+            font=("Impact", 40)  # Set font
+        )
+
+        firstButton.configure(command=lambda btn=firstButton: self.first_button_clicked(btn))
+
+        firstButton.place(relx=newX, rely=newY, anchor="center")
+        self.buttons.append(firstButton)  # Store reference
+
+    def first_button_clicked(self, button):
+        """Called when the first X button is clicked."""
+        self.counter += 1
+        self.text.config(state=tk.NORMAL)
+        self.text.delete("1.0", tk.END)
+        self.text.insert("1.0", f"Current count: {self.counter}")
+        self.text.config(state=tk.DISABLED)
+
+        button.destroy()  # Destroy the first button
+        self.buttons.remove(button)  # Remove from the list
+
+        if not self.first_click:
+            self.first_click = True  # Set the flag to True after the first click
+            self.spawn_button()  # Start spawning more buttons after the first click
 
     def spawn_button(self):
+        """Start spawning new X buttons after the first click."""
         if len(self.buttons) >= 10:
             self.end_game()  # End game if more than 10 buttons
             return
@@ -55,9 +97,6 @@ class SimpleApp:
             newX = random.uniform(padding / screenWidth, 1 - padding / screenWidth)
             newY = random.uniform(padding / screenHeight, 1 - padding / screenHeight)
 
-
-#                                    \/ \/ \/ Button creation config \/ \/ \/
-
         # Create a new button instance
         closeButton = CTkButton(
             master=self.app, text="❌", text_color="white",
@@ -65,8 +104,6 @@ class SimpleApp:
             fg_color="#1A1A1A", hover_color="#373662",
             font=("Impact", 40)  # Set font
         )
-#                                    /\ /\ /\ Button creation config /\ /\ /\
-
 
         closeButton.configure(command=lambda btn=closeButton: self.button_clicked(btn))
 
@@ -75,7 +112,7 @@ class SimpleApp:
         self.fade_in(closeButton, 0)  # Start fade-in
 
         # Schedule the next button spawn
-        self.app.after(250, self.spawn_button)  # spawns an x every .25 seconds
+        self.app.after(250, self.spawn_button)  # spawns an X every .25 seconds
 
     def fade_in(self, button, step):
         if step <= 10:
